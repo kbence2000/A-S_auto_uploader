@@ -1,0 +1,53 @@
+import fs from "fs";
+import path from "path";
+import { execSync } from "child_process";
+
+// ========== CONFIG ==========
+const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME";
+const REPO_NAME = "Almighty-Systems";
+const GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"; 
+// ============================
+
+function run(cmd) {
+  console.log("Running:", cmd);
+  execSync(cmd, { stdio: "inherit" });
+}
+
+function ensureGit() {
+  if (!fs.existsSync(".git")) {
+    run(`git init`);
+    run(`git branch -M main`);
+  }
+}
+
+function writeGitignore() {
+  fs.writeFileSync(
+    ".gitignore",
+    `
+node_modules
+.DS_Store
+dist
+build
+tmp
+.env
+`
+  );
+}
+
+async function upload() {
+  ensureGit();
+  writeGitignore();
+
+  run(`git add .`);
+  run(`git commit -m "Automated upload from Almighty Systems"`);
+
+  run(
+    `git remote add origin https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/${REPO_NAME}.git`
+  );
+
+  run(`git push -u origin main --force`);
+
+  console.log("🔥 Sikeresen feltöltve GitHubra!");
+}
+
+upload();
